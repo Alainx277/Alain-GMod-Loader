@@ -148,10 +148,13 @@ DWORD WINAPI Main(LPVOID lParam)
 
 	while (!GetAsyncKeyState(VK_END))
 	{
-		Sleep(5);
+		Sleep(10);
 	}
 	cout << "Unloading...\n";
 	// Close console
+	fclose(stdin);
+	fclose(stdout);
+	fclose(stderr);
 	FreeConsole();
 	// Unload module and exit
 	FreeLibraryAndExitThread(myModule, 0);
@@ -191,6 +194,9 @@ lua_State* GetClientState()
 	cout << "Error!\n";
 	cout << "Unloaded!\n";
 	// Close console
+	fclose(stdin);
+	fclose(stdout);
+	fclose(stderr);
 	FreeConsole();
 	// Unload module and exit
 	FreeLibraryAndExitThread(myModule, 0);
