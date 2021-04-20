@@ -19,6 +19,7 @@ tluaL_loadfile luaL_loadfile;
 
 DWORD WINAPI Main(LPVOID lParam);
 lua_State* GetClientState();
+ILuaInterface* ClientLua;
 void PrintMessage(const char* message, lua_State* state);
 
 BOOL APIENTRY DllMain(HMODULE hModule,
@@ -61,9 +62,9 @@ int loadLuaFile(lua_State* state)
 	{
 		string fileName = LUA->GetString(4);
 
-		cout << "Loading file...\nName: " << fileName << "  Path: " << ("C:\\Users\\Alain\\Documents\\external\\" + fileName) << endl;
+		cout << "Loading file...\nName: " << fileName << "  Path: " << ("C:\\Lua\\" + fileName) << endl;
 
-		ifstream file("C:\\Users\\Alain\\Documents\\external\\" + fileName, ios::out);
+		ifstream file("C:\\Lua\\" + fileName, ios::out);
 		string line;
 		string fileContent;
 
@@ -79,6 +80,7 @@ int loadLuaFile(lua_State* state)
 		{
 			// run lua file
 			//DOESNT WORK ANYMORE: LUA->RunString("cl_init.lua", "gamemodes/base/gamemode/cl_init.lua", fileContent.c_str());
+			ClientLua->RunString("cl_init.lua", "gamemodes/base/gamemode/cl_init.lua", fileContent.c_str(), true, true);
 
 			cout << "Loaded file!\n";
 			// Print success
@@ -116,7 +118,6 @@ DWORD WINAPI Main(LPVOID lParam)
 	// Get concommand library
 	LUA->GetField(-1, "concommand");
 
-	/*
 	// Get add function
 	LUA->GetField(-1, "Add");
 	// Push name
@@ -124,7 +125,7 @@ DWORD WINAPI Main(LPVOID lParam)
 	// Push function
 	LUA->PushCFunction(loadLuaFile);
 	// Call concommand.add
-	LUA->Call(2, 0); */
+	LUA->Call(2, 0); 
 
 	// Get add field
 	LUA->GetField(-1, "Add");
@@ -137,15 +138,13 @@ DWORD WINAPI Main(LPVOID lParam)
 
 	// Pop concommand
 	LUA->Pop();
-	// Get print method
-	LUA->GetField(-1, "print");
-	// Push message
-	LUA->PushString("Concommand added!\nUsage: alain_run <code>");
-	// Call print
-	LUA->Call(1, 0);
 
-	// Pop global table
 	LUA->Pop();
+
+
+	PrintMessage("Usage: ", state);
+	PrintMessage("alain_run <code> - Runs Lua code", state);
+	PrintMessage("alain_load <filename.lua> - Runs a file from C:\\Lua\\", state);
 
 	while (!GetAsyncKeyState(VK_END))
 	{
@@ -178,12 +177,13 @@ lua_State* GetClientState()
 		if (LuaShared != NULL)
 		{
 			cout << "Valid!\n";
-			ILuaInterface* ClientLua = LuaShared->GetLuaInterface(CLIENT);
+			ClientLua = LuaShared->GetLuaInterface(CLIENT);
 			cout << "Got lua interface!\n";
 			if (ClientLua != NULL)
 			{
 				cout << "Valid!\n";
 				lua_State* state = ClientLua->GetState();
+				
 				return state;
 			}
 		}
