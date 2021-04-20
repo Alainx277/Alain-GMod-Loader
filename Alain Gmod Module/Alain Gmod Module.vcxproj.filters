@@ -26,12 +26,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Color.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GLua.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>

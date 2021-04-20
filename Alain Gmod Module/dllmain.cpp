@@ -1,7 +1,14 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include <Windows.h>
-#include "GLua.h"
 #include "Internal.h"
+
+#define GMOD_ALLOW_DEPRECATED 1
+#include "../garrysmod_common/include/GarrysMod/Lua/Interface.h"
+#include "../garrysmod_common/include/GarrysMod/Lua/LuaInterface.h"
+#include "../garrysmod_common/include/GarrysMod/Lua/LuaShared.h"
+using namespace GarrysMod::Lua;
+using namespace GarrysMod::Lua::State;
+using namespace GarrysMod::Lua::Type;
 
 HMODULE myModule;
 
@@ -38,7 +45,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 // Run lua string
 int runString(lua_State* state)
 {
-	if (LUA->IsType(4, TYPE_STRING))
+	if (LUA->IsType(4, String))
 	{
 		luaL_loadstring(state, LUA->GetString(4));
 		LUA->PCall(0, 0, 0);
@@ -50,7 +57,7 @@ int runString(lua_State* state)
 // Load lua file
 int loadLuaFile(lua_State* state)
 {
-	if (LUA->IsType(4, TYPE_STRING))
+	if (LUA->IsType(4, String))
 	{
 		string fileName = LUA->GetString(4);
 
@@ -71,9 +78,8 @@ int loadLuaFile(lua_State* state)
 		if (!fileContent.empty())
 		{
 			// run lua file
-			LUA->RunString("cl_init.lua", "gamemodes/base/gamemode/cl_init.lua", fileContent.c_str());
-			//luaL_loadstring(state, fileContent.c_str());
-			//LUA->PCall(0,0,0);
+			//DOESNT WORK ANYMORE: LUA->RunString("cl_init.lua", "gamemodes/base/gamemode/cl_init.lua", fileContent.c_str());
+
 			cout << "Loaded file!\n";
 			// Print success
 			LUA->PushSpecial(SPECIAL_GLOB);
@@ -109,6 +115,8 @@ DWORD WINAPI Main(LPVOID lParam)
 
 	// Get concommand library
 	LUA->GetField(-1, "concommand");
+
+	/*
 	// Get add function
 	LUA->GetField(-1, "Add");
 	// Push name
@@ -116,7 +124,7 @@ DWORD WINAPI Main(LPVOID lParam)
 	// Push function
 	LUA->PushCFunction(loadLuaFile);
 	// Call concommand.add
-	LUA->Call(2, 0);
+	LUA->Call(2, 0); */
 
 	// Get add field
 	LUA->GetField(-1, "Add");
@@ -132,7 +140,7 @@ DWORD WINAPI Main(LPVOID lParam)
 	// Get print method
 	LUA->GetField(-1, "print");
 	// Push message
-	LUA->PushString("Concommand added!\nUsage: alain_load <filename>");
+	LUA->PushString("Concommand added!\nUsage: alain_run <code>");
 	// Call print
 	LUA->Call(1, 0);
 
@@ -165,17 +173,17 @@ lua_State* GetClientState()
 		luaL_loadstring = (tluaL_loadstring)GetProcAddress(LuaShared_modhandle, "luaL_loadstring");
 		luaL_loadfile = (tluaL_loadfile)GetProcAddress(LuaShared_modhandle, "luaL_loadfile");
 
-		CLuaShared* LuaShared = (CLuaShared*)LuaShared_createinter("LUASHARED003", NULL);
+		ILuaShared* LuaShared = (ILuaShared*)LuaShared_createinter("LUASHARED003", NULL);
 		cout << "Created interface!\n";
 		if (LuaShared != NULL)
 		{
 			cout << "Valid!\n";
-			ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LUA_CLIENT);
+			ILuaInterface* ClientLua = LuaShared->GetLuaInterface(CLIENT);
 			cout << "Got lua interface!\n";
 			if (ClientLua != NULL)
 			{
 				cout << "Valid!\n";
-				lua_State* state = ClientLua->GetLuaState();
+				lua_State* state = ClientLua->GetState();
 				return state;
 			}
 		}
